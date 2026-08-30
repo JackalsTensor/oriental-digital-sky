@@ -98,3 +98,61 @@ export interface EnrichedBaziChart extends Omit<BaziChart, 'pillars'> {
   dayMaster: StemInfo
   pillars: [EnrichedPillar, EnrichedPillar, EnrichedPillar, EnrichedPillar]
 }
+
+// ─────────── V1.6 分析层(旺衰 / 日主强弱 / 合冲刑害破) ───────────
+
+/** 五行旺衰(月令旺相休囚死) */
+export type WangShuai = '旺' | '相' | '休' | '囚' | '死'
+
+/** 日主强弱等级 */
+export type StrengthLevel = '强' | '偏强' | '中和' | '偏弱' | '弱'
+
+/** 四柱位名 */
+export type PillarName = '年柱' | '月柱' | '日柱' | '时柱'
+
+/** 强弱打分明细项 */
+export interface StrengthFactor {
+  /** 如「月干 偏印」「月支 本气(×1.5)」 */
+  label: string
+  kind: '帮扶' | '克泄'
+  /** 带符号的计入分数 */
+  weight: number
+  source: PillarName | '月令加成'
+}
+
+/** 日主强弱结果 */
+export interface DayMasterStrength {
+  score: number
+  level: StrengthLevel
+  factors: StrengthFactor[]
+  /** 得令:月支本气五行与日主相同 */
+  isCommanding: boolean
+}
+
+/** 命局关系汇总 */
+export interface BaziRelations {
+  /** 天干五合 */
+  stemCombos: { a: PillarName; b: PillarName; element: Wuxing }[]
+  /** 地支六合 */
+  branchCombos: { a: PillarName; b: PillarName; element: Wuxing }[]
+  /** 三合局(两字为半合,complete=false;不判定成局吉凶) */
+  harmonies: { members: PillarName[]; element: Wuxing; complete: boolean }[]
+  /** 三会方(同上) */
+  meetings: { members: PillarName[]; element: Wuxing; complete: boolean }[]
+  /** 六冲 */
+  clashes: { a: PillarName; b: PillarName }[]
+  /** 刑(有向)+ 自刑 */
+  punishments: { a: PillarName; b: PillarName }[]
+  /** 六害 */
+  harms: { a: PillarName; b: PillarName }[]
+  /** 六破 */
+  destructions: { a: PillarName; b: PillarName }[]
+}
+
+/** 命局分析汇总(供 UI 与后续格局/喜用神/大运消费) */
+export interface BaziAnalysis {
+  /** 月令五行旺衰(五元素全映射) */
+  monthStrength: Record<Wuxing, WangShuai>
+  dayMasterStrength: DayMasterStrength
+  relations: BaziRelations
+}

@@ -10,9 +10,9 @@ import type { TenGod, Wuxing } from './types'
 import { stemInfo } from './ganzhi'
 
 /** 五行相生:木→火→土→金→水 */
-const GENERATES: Record<Wuxing, Wuxing> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }
+export const WUXING_GENERATES: Record<Wuxing, Wuxing> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }
 /** 五行相克:木克土,土克水,水克火,火克金,金克木 */
-const CONTROLS: Record<Wuxing, Wuxing> = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' }
+export const WUXING_CONTROLS: Record<Wuxing, Wuxing> = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' }
 
 /** other 干相对 day 干(日主)的十神 */
 export function tenGodOf(dayStemIndex: number, otherStemIndex: number): TenGod {
@@ -20,13 +20,13 @@ export function tenGodOf(dayStemIndex: number, otherStemIndex: number): TenGod {
   const other = stemInfo(otherStemIndex)
   if (other.index === day.index) return '比肩'
   if (other.wuxing === day.wuxing) return '劫财' // 同五行两天干阴阳必相反
-  if (GENERATES[day.wuxing] === other.wuxing) {
+  if (WUXING_GENERATES[day.wuxing] === other.wuxing) {
     return other.yinYang === day.yinYang ? '食神' : '伤官'
   }
-  if (CONTROLS[day.wuxing] === other.wuxing) {
+  if (WUXING_CONTROLS[day.wuxing] === other.wuxing) {
     return other.yinYang === day.yinYang ? '偏财' : '正财'
   }
-  if (CONTROLS[other.wuxing] === day.wuxing) {
+  if (WUXING_CONTROLS[other.wuxing] === day.wuxing) {
     return other.yinYang === day.yinYang ? '七杀' : '正官'
   }
   return other.yinYang === day.yinYang ? '偏印' : '正印'

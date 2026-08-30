@@ -11,6 +11,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+  analyzeChart,
   computeBaziChart,
   enrichChart,
   MAX_YEAR,
@@ -46,6 +47,7 @@ export default function BaziChart() {
   const [error, setError] = useState<string | null>(null)
 
   const enriched = useMemo(() => (chart ? enrichChart(chart) : null), [chart])
+  const analysis = useMemo(() => (enriched ? analyzeChart(enriched) : null), [enriched])
 
   const dateParts = form.date ? form.date.split('-').map(Number) : null
   const timeParts = form.time ? form.time.split(':').map(Number) : null
@@ -275,6 +277,65 @@ export default function BaziChart() {
                     ))}
                   </div>
                 </div>
+
+                {/* 命局旺衰(通行简化模型,边界已声明) */}
+                {analysis && (
+                  <div className="mt-5 border-t border-paper/8 pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-serif-cn text-[12px] tracking-[0.3em] text-paper/80">命局旺衰</span>
+                      <span className="caps-label text-[7.5px] text-mist/55">Strength</span>
+                    </div>
+
+                    {/* 月令五行旺衰 */}
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                      {WUXING_ORDER.map((w) => (
+                        <span key={w} className="text-[10px] tracking-[0.15em]">
+                          <span style={{ color: WUXING_COLOR[w] }}>{w}</span>
+                          <span className="ml-1 text-mist/70">{analysis.monthStrength[w]}</span>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* 日主强弱 */}
+                    <div className="mt-2.5 text-[10px] tracking-[0.15em] text-mist/70">
+                      日主{enriched.dayMaster.char}(
+                      <span style={{ color: WUXING_COLOR[enriched.dayMaster.wuxing] }}>
+                        {enriched.dayMaster.wuxing}
+                      </span>
+                      ){analysis.dayMasterStrength.isCommanding ? '得令' : '失令'} ·{' '}
+                      <span className="text-paper/75">{analysis.dayMasterStrength.level}</span>
+                      <span className="ml-1 font-latin text-[9.5px] text-mist/55">
+                        {analysis.dayMasterStrength.score > 0 ? '+' : ''}
+                        {analysis.dayMasterStrength.score.toFixed(1)}
+                      </span>
+                    </div>
+
+                    {/* 合冲刑害破(仅存在时显示) */}
+                    {(() => {
+                      const r = analysis.relations
+                      const b = (name: string) => enriched.pillars.find((p) => p.pillar.name === name)!
+                      const texts: string[] = []
+                      for (const c of r.stemCombos) texts.push(`${b(c.a).pillar.stem.char}${b(c.b).pillar.stem.char}合${c.element}`)
+                      for (const c of r.branchCombos) texts.push(`${b(c.a).pillar.branch.char}${b(c.b).pillar.branch.char}合${c.element}`)
+                      for (const h of r.harmonies) texts.push(`${h.members.map((m) => b(m).pillar.branch.char).join('')}${h.complete ? '三合' : '半合'}${h.element}`)
+                      for (const m of r.meetings) texts.push(`${m.members.map((x) => b(x).pillar.branch.char).join('')}${m.complete ? '三会' : '半会'}${m.element}`)
+                      for (const c of r.clashes) texts.push(`${b(c.a).pillar.branch.char}${b(c.b).pillar.branch.char}冲`)
+                      for (const p of r.punishments) texts.push(`${b(p.a).pillar.branch.char}${b(p.b).pillar.branch.char}刑`)
+                      for (const h of r.harms) texts.push(`${b(h.a).pillar.branch.char}${b(h.b).pillar.branch.char}害`)
+                      for (const d of r.destructions) texts.push(`${b(d.a).pillar.branch.char}${b(d.b).pillar.branch.char}破`)
+                      if (texts.length === 0) return null
+                      return (
+                        <div className="mt-2.5 text-[10px] leading-relaxed tracking-[0.15em] text-mist/70">
+                          合冲刑害破 · <span className="text-paper/65">{texts.join(' · ')}</span>
+                        </div>
+                      )
+                    })()}
+
+                    <p className="mt-2.5 text-[9px] leading-relaxed tracking-[0.06em] text-mist/40">
+                      强弱为通行简化打分模型之一(非唯一标准);未判定合化条件与成局吉凶;土月司令分野等流派细分未计入。
+                    </p>
+                  </div>
+                )}
 
                 {/* 五行分布 */}
                 <div className="mt-5 border-t border-paper/8 pt-5">

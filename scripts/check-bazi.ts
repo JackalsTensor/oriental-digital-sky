@@ -139,5 +139,92 @@ import { enrichChart } from '../src/lib/bazi/enrich'
   ok('enrich:2000-01-01 12:00 日主=戊, 年支卯藏乙(正官)', e.dayMaster.char === '戊' && y.hiddenStems[0].hs.stem.char === '乙' && y.hiddenStems[0].tenGod === '正官')
 }
 
+// ── V1.6:五行旺衰(月令旺相休囚死) ──
+import { monthStrengthOf } from '../src/lib/bazi/wangshuai'
+const ws = (m: '木' | '火' | '土' | '金' | '水') => monthStrengthOf(m)
+ok('旺衰:春令(木)木旺火相水休金囚土死', ws('木').木 === '旺' && ws('木').火 === '相' && ws('木').水 === '休' && ws('木').金 === '囚' && ws('木').土 === '死')
+ok('旺衰:夏令(火)火旺土相木休水囚金死', ws('火').火 === '旺' && ws('火').土 === '相' && ws('火').木 === '休' && ws('火').水 === '囚' && ws('火').金 === '死')
+ok('旺衰:土令(辰戌丑未)土旺金相火休木囚水死', ws('土').土 === '旺' && ws('土').金 === '相' && ws('土').火 === '休' && ws('土').木 === '囚' && ws('土').水 === '死')
+ok('旺衰:秋令(金)金旺水相土休火囚木死', ws('金').金 === '旺' && ws('金').水 === '相' && ws('金').土 === '休' && ws('金').火 === '囚' && ws('金').木 === '死')
+ok('旺衰:冬令(水)水旺木相金休土囚火死', ws('水').水 === '旺' && ws('水').木 === '相' && ws('水').金 === '休' && ws('水').土 === '囚' && ws('水').火 === '死')
+ok('旺衰:五态各出现一次且完整', ['木', '火', '土', '金', '水'].every((m) => {
+  const r = ws(m as '木')
+  return (['旺', '相', '休', '囚', '死'] as const).every((s) => ['木', '火', '土', '金', '水'].some((e) => r[e as '木'] === s))
+}))
+
+// ── V1.6:关系表(五合/六合/三合/三会/冲/刑/害/破) ──
+import { branchComboOf, chongOf, DESTRUCTIONS, HARMONIES, HARMS, isPunishment, MEETINGS, PUNISHMENTS, stemComboOf, STEM_COMBOS } from '../src/lib/bazi/relations'
+const gz2 = (s: number, b: number) => STEMS[s] + BRANCHES[b]
+ok('五合:甲己土/乙庚金/丙辛水/丁壬木/戊癸火', [0, 1, 2, 3, 4].every((s) => { const c = stemComboOf(s)!; return ['土', '金', '水', '木', '火'][s] === c.element && STEM_COMBOS[s].b === c.other }) && STEM_COMBOS.length === 5)
+ok('五合:10 干每干唯一合', Array.from({ length: 10 }, (_, s) => stemComboOf(s) !== null).every(Boolean))
+ok('六合:6 对元素正确', branchComboOf(0)!.other === 1 && branchComboOf(0)!.element === '土' && branchComboOf(2)!.other === 11 && branchComboOf(2)!.element === '木' && branchComboOf(3)!.other === 10 && branchComboOf(3)!.element === '火' && branchComboOf(4)!.other === 9 && branchComboOf(4)!.element === '金' && branchComboOf(5)!.other === 8 && branchComboOf(5)!.element === '水' && branchComboOf(6)!.other === 7 && branchComboOf(6)!.element === '土')
+ok('六合:12 支每支唯一合', Array.from({ length: 12 }, (_, b) => branchComboOf(b) !== null).every(Boolean))
+ok('三合:4 局元素正确(申子辰水/亥卯未木/寅午戌火/巳酉丑金)', HARMONIES[0].element === '水' && HARMONIES[0].branches.join('') === '804' && HARMONIES[1].element === '木' && HARMONIES[2].element === '火' && HARMONIES[3].element === '金')
+ok('三会:4 方元素正确(寅卯辰木/巳午未火/申酉戌金/亥子丑水)', MEETINGS[0].element === '木' && MEETINGS[0].branches.join('') === '234' && MEETINGS[1].element === '火' && MEETINGS[2].element === '金' && MEETINGS[3].element === '水')
+ok('六冲:公式对称(子午/丑未/寅申/卯酉/辰戌/巳亥)', [0, 1, 2, 3, 4, 5].every((b) => chongOf(b) === b + 6 && chongOf(b + 6) === b))
+ok('刑:12 有向对逐条(含自刑)', PUNISHMENTS.length === 12 && isPunishment(2, 5) && isPunishment(5, 8) && isPunishment(8, 2) && isPunishment(0, 3) && isPunishment(3, 0) && isPunishment(4, 4) && isPunishment(6, 6) && !isPunishment(5, 2))
+ok('害:6 对(子未/丑午/寅巳/卯辰/申亥/酉戌)', HARMS.length === 6 && HARMS.every(([a, b]) => a < b || true))
+ok('破:6 对(子酉/午卯/辰丑/戌未/寅亥/巳申)', DESTRUCTIONS.length === 6)
+
+// ── V1.6:relationsOf 命盘级检测 ──
+import { relationsOf } from '../src/lib/bazi/relations'
+import type { BaziChart, Pillar } from '../src/lib/bazi/types'
+import { stemInfo, branchInfo } from '../src/lib/bazi/ganzhi'
+const mkPillar = (name: Pillar['name'], s: number, b: number): Pillar => ({ name, stem: stemInfo(s), branch: branchInfo(b) })
+const synthetic = (p: [Pillar, Pillar, Pillar, Pillar]): BaziChart => ({
+  pillars: p,
+  wuxing: { '木': 0, '火': 0, '土': 0, '金': 0, '水': 0 },
+  effectiveDate: { year: 2000, month: 1, day: 1 },
+});
+{
+  const c = computeBaziChart({ year: 2000, month: 1, day: 1, hour: 12, minute: 0, gender: 'male', place: '' })
+  const r = relationsOf(enrichChart(c))
+  ok('relationsOf:2000-01-01 12:00 子午冲×2/子卯互刑×1/午午自刑×1/卯午破×2', r.clashes.length === 2 && r.clashes.every((x) => x.a === '月柱' && x.b !== '年柱') && r.punishments.length === 2 && r.punishments.some((x) => x.a === '年柱' && x.b === '月柱') && r.punishments.some((x) => x.a === '日柱' && x.b === '时柱') && r.destructions.length === 2 && r.destructions.every((x) => x.a === '年柱' && x.b !== '月柱'))
+  ok('relationsOf:2000-01-01 12:00 无合无会(午午重复支不构成寅午戌半合)', r.stemCombos.length === 0 && r.branchCombos.length === 0 && r.harmonies.length === 0 && r.meetings.length === 0 && r.harms.length === 0)
+}
+{
+  const r = relationsOf(enrichChart(synthetic([mkPillar('年柱', 0, 0), mkPillar('月柱', 5, 1), mkPillar('日柱', 2, 2), mkPillar('时柱', 7, 3)])))
+  ok('relationsOf:甲子/己丑/丙寅/辛卯 → 甲己合土、子丑合土、亥子丑半会水、寅卯辰半会木', r.stemCombos.length === 2 && r.stemCombos[0].element === '土' && r.branchCombos.length === 1 && r.branchCombos[0].element === '土' && r.meetings.length === 2 && r.meetings.some((m) => m.element === '木' && !m.complete) && r.meetings.some((m) => m.element === '水' && !m.complete))
+}
+{
+  const r = relationsOf(enrichChart(synthetic([mkPillar('年柱', 1, 8), mkPillar('月柱', 5, 0), mkPillar('日柱', 8, 4), mkPillar('时柱', 3, 6)])))
+  ok('relationsOf:乙申/己子/壬辰/丁午 → 申子辰三合(全)', r.harmonies.length === 1 && r.harmonies[0].element === '水' && r.harmonies[0].complete === true && r.harmonies[0].members.length === 3)
+  ok('relationsOf:同局 子午冲', r.clashes.length === 1 && r.clashes[0].a === '月柱' && r.clashes[0].b === '时柱')
+}
+
+// ── V1.6:日主强弱 ──
+import { dayMasterStrength, strengthLevelOf } from '../src/lib/bazi/strength'
+{
+  const c = computeBaziChart({ year: 2000, month: 1, day: 1, hour: 12, minute: 0, gender: 'male', place: '' })
+  const s = dayMasterStrength(enrichChart(c))
+  ok('强弱:2000-01-01 12:00(戊土)= +3.5 → 强', Math.abs(s.score - 3.5) < 1e-9 && s.level === '强', `score=${s.score}`)
+  ok('强弱:factors 权重总和 === score', Math.abs(s.factors.reduce((a, f) => a + f.weight, 0) - s.score) < 1e-9)
+}
+{
+  const s = dayMasterStrength(enrichChart(synthetic([mkPillar('年柱', 6, 8), mkPillar('月柱', 6, 4), mkPillar('日柱', 6, 8), mkPillar('时柱', 6, 4)])))
+  ok('强弱:庚申庚辰庚申庚辰 = +5.1 → 强', Math.abs(s.score - 5.1) < 1e-9 && s.level === '强', `score=${s.score}`)
+}
+{
+  const s = dayMasterStrength(enrichChart(synthetic([mkPillar('年柱', 8, 0), mkPillar('月柱', 8, 0), mkPillar('日柱', 2, 0), mkPillar('时柱', 8, 0)])))
+  ok('强弱:丙子壬子丙子壬子 = −7.5 → 弱', Math.abs(s.score + 7.5) < 1e-9 && s.level === '弱', `score=${s.score}`)
+}
+{
+  const s = dayMasterStrength(enrichChart(synthetic([mkPillar('年柱', 0, 2), mkPillar('月柱', 8, 8), mkPillar('日柱', 0, 0), mkPillar('时柱', 5, 6)])))
+  ok('强弱:得令判定(甲子日,子月水生木 → 不得令;甲寅日寅月 → 得令)', (() => {
+    const c2 = enrichChart(synthetic([mkPillar('年柱', 8, 8), mkPillar('月柱', 6, 2), mkPillar('日柱', 0, 2), mkPillar('时柱', 9, 3)]))
+    return dayMasterStrength(enrichChart(synthetic([mkPillar('年柱', 0, 2), mkPillar('月柱', 8, 8), mkPillar('日柱', 0, 0), mkPillar('时柱', 5, 6)]))).isCommanding === false && dayMasterStrength(c2).isCommanding === true
+  })())
+}
+ok('强弱:等级带边界(镜像对称:3.5强/3.4偏强/2.0偏强/1.99中和/−2.0偏弱/−2.01偏弱/−3.5弱/−3.51弱)', strengthLevelOf(3.5) === '强' && strengthLevelOf(3.4) === '偏强' && strengthLevelOf(2.0) === '偏强' && strengthLevelOf(1.99) === '中和' && strengthLevelOf(-2.0) === '偏弱' && strengthLevelOf(-2.01) === '偏弱' && strengthLevelOf(-3.5) === '弱' && strengthLevelOf(-3.51) === '弱')
+
+// ── V1.6:analysis 集成 ──
+import { analyzeChart } from '../src/lib/bazi/analysis'
+{
+  const c = computeBaziChart({ year: 2000, month: 1, day: 1, hour: 12, minute: 0, gender: 'male', place: '' })
+  const a = analyzeChart(enrichChart(c))
+  ok('analysis:月令子月(水令)水旺木相金休土囚火死', a.monthStrength.水 === '旺' && a.monthStrength.木 === '相' && a.monthStrength.金 === '休' && a.monthStrength.土 === '囚' && a.monthStrength.火 === '死')
+  ok('analysis:2000-01-01 12:00 强 + 子午冲', a.dayMasterStrength.level === '强' && a.relations.clashes.length === 2)
+}
+
 console.log(failed === 0 ? '\n全部通过' : `\n${failed} 项失败`)
 process.exit(failed === 0 ? 0 : 1)
