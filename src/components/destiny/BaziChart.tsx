@@ -2,7 +2,7 @@
  * 八字排盘 V1 内容层:
  *  - 输入:公历出生日期/时间(北京时间)、性别、出生地点(文本)
  *  - 排盘:年柱(立春换年)/月柱(节气定月)/日柱(JDN 干支,晚子时换日)/时柱(传统时辰)
- *  - 展示:四柱命盘(天干/地支/五行·阴阳)+ 五行分布
+ *  - 展示:四柱命盘(天干/地支/五行·阴阳)+ 五行分布 + 大运
  * 计算与 UI 分离 —— 全部排盘逻辑在 src/lib/bazi(纯函数,锚点校验见 scripts/check-bazi.ts)。
  * 视觉沿用平台设计系统:玻璃面板、serif 中文、低饱和五行色、克制动画。
  */
@@ -10,15 +10,18 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
+import DayunPanel from './DayunPanel'
 import {
   analyzeChart,
   computeBaziChart,
+  computeDayun,
   enrichChart,
   MAX_YEAR,
   MIN_YEAR,
   validateInput,
   WUXING_ORDER,
   type BaziChart as BaziChartData,
+  type BaziInput,
   type Wuxing,
 } from '@/lib/bazi'
 
@@ -44,10 +47,12 @@ interface FormState {
 export default function BaziChart() {
   const [form, setForm] = useState<FormState>({ date: '', time: '', gender: 'male', place: '' })
   const [chart, setChart] = useState<BaziChartData | null>(null)
+  const [birthInput, setBirthInput] = useState<BaziInput | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const enriched = useMemo(() => (chart ? enrichChart(chart) : null), [chart])
   const analysis = useMemo(() => (enriched ? analyzeChart(enriched) : null), [enriched])
+  const dayun = useMemo(() => (chart && birthInput ? computeDayun(birthInput, chart) : null), [birthInput, chart])
 
   const dateParts = form.date ? form.date.split('-').map(Number) : null
   const timeParts = form.time ? form.time.split(':').map(Number) : null
@@ -70,9 +75,11 @@ export default function BaziChart() {
     if (err) {
       setError(err.message)
       setChart(null)
+      setBirthInput(null)
       return
     }
     setError(null)
+    setBirthInput(input)
     setChart(computeBaziChart(input))
   }
 
@@ -124,7 +131,7 @@ export default function BaziChart() {
                 min={`${MIN_YEAR}-01-01`}
                 max={`${MAX_YEAR}-12-31`}
                 value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
                 className="sky-input w-full"
                 aria-label="公历出生日期"
               />
@@ -134,7 +141,7 @@ export default function BaziChart() {
               <input
                 type="time"
                 value={form.time}
-                onChange={(e) => setForm({ ...form, time: e.target.value })}
+                onChange={(e) => setForm((prev) => ({ ...prev, time: e.target.value }))}
                 className="sky-input w-full"
                 aria-label="出生时间"
               />
@@ -143,7 +150,7 @@ export default function BaziChart() {
               <span className="text-[10px] tracking-[0.25em] text-mist/70">性别</span>
               <select
                 value={form.gender}
-                onChange={(e) => setForm({ ...form, gender: e.target.value as 'male' | 'female' })}
+                onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value as 'male' | 'female' }))}
                 className="sky-input w-full"
                 aria-label="性别"
               >
@@ -156,7 +163,7 @@ export default function BaziChart() {
               <input
                 type="text"
                 value={form.place}
-                onChange={(e) => setForm({ ...form, place: e.target.value })}
+                onChange={(e) => setForm((prev) => ({ ...prev, place: e.target.value }))}
                 placeholder="城市名(记录用)"
                 className="sky-input w-full"
                 aria-label="出生地点"
@@ -375,12 +382,14 @@ export default function BaziChart() {
                     })}
                   </div>
                 </div>
+
+                {dayun && <DayunPanel dayun={dayun} />}
               </div>
 
               {/* 排盘信息与免责声明 */}
               <p className="mt-4 text-center text-[9.5px] leading-relaxed tracking-[0.06em] text-mist/40">
                 排盘基于公历 {chart.effectiveDate.year}-{pad(chart.effectiveDate.month)}-
-                {pad(chart.effectiveDate.day)} 日柱(晚子时已换日)· 节气时刻精度约 ±15 分钟 · 藏干依通行表(巳藏丙庚戊)· 纳音依《三命通会》· 本系统用于传统命理文化研究与数字化体验,排盘结果仅供文化研究与娱乐参考,不构成医疗、法律、投资或其他专业建议。
+                {pad(chart.effectiveDate.day)} 日柱(晚子时已换日)· 节气时刻精度约 ±15 分钟 · 藏干依通行表(巳藏丙庚戊)· 纳音依《三命通会》· 大运按三天一岁折算 · 本系统用于传统命理文化研究与数字化体验,排盘结果仅供文化研究与娱乐参考,不构成医疗、法律、投资或其他专业建议。
               </p>
             </motion.div>
           )}

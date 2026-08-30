@@ -9,6 +9,7 @@
     "lint": "eslint",
     "check:astro": "tsx scripts/check-astronomy.ts",
     "check:bazi": "tsx scripts/check-bazi.ts",
+    "check:dayun": "tsx scripts/check-dayun.ts",
     "check:dipper": "tsx scripts/check-dipper.ts"
   },
   "dependencies": {
