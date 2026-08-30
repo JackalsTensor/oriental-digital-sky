@@ -16,11 +16,13 @@ const CN_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九']
 function Section({
   title,
   en,
+  index,
   defaultOpen = false,
   children,
 }: {
   title: string
   en: string
+  index?: string
   defaultOpen?: boolean
   children: React.ReactNode
 }) {
@@ -31,7 +33,10 @@ function Section({
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between py-3.5 text-left"
       >
-        <span className="font-serif-cn text-[13.5px] tracking-[0.2em] text-paper/90">{title}</span>
+        <span className="flex items-baseline gap-2.5">
+          {index && <span className="font-latin text-[7.5px] text-mist/40">{index}</span>}
+          <span className="font-serif-cn text-[13.5px] tracking-[0.2em] text-paper/90">{title}</span>
+        </span>
         <span className="flex items-center gap-3">
           <span className="caps-label text-[7.5px] text-mist/60">{en}</span>
           <motion.span
@@ -94,6 +99,23 @@ export default function InfoPanel() {
           exit={{ opacity: 0, x: 40 }}
           transition={{ duration: 0.55, ease: EASE }}
         >
+          {/* 仪器化顶部:金色发丝线 + 状态条 */}
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/35 to-transparent"
+          />
+          <div className="caps-label flex items-center gap-2 px-6 pt-4 text-[7.5px] text-mist/60">
+            <span className="inline-block h-1 w-1 rounded-full bg-gold/80" />
+            <span>
+              {mansion
+                ? `Mansion · 第${CN_NUM[mansion.index - 1]}宿`
+                : quadrant
+                  ? 'Quadrant · 四象'
+                  : 'Guide · 北斗'}
+            </span>
+            <span className="ml-auto text-mist/40">Celestial Record</span>
+          </div>
+
           <button
             onClick={() => close(null)}
             className="absolute right-4 top-4 z-10 flex h-6 w-6 items-center justify-center text-paper/50 transition-colors duration-300 hover:text-paper"
@@ -103,7 +125,8 @@ export default function InfoPanel() {
           </button>
 
           {mansion && (
-            <div className="px-6 pb-6 pt-6">
+            <div className="relative px-6 pb-6 pt-3">
+              <span aria-hidden className="absolute -left-0.5 top-3 h-9 w-px bg-gold/40" />
               <div className="flex items-baseline gap-3">
                 <h2 className="font-serif-cn text-[34px] font-medium tracking-[0.2em] text-paper">
                   {mansion.name}
@@ -159,14 +182,14 @@ export default function InfoPanel() {
 
               <div className="caps-label py-2 text-[7.5px] text-mist/50">View Details</div>
 
-              <Section title="古代天文学" en="ASTRONOMY">
+              <Section title="古代天文学" en="ASTRONOMY" index="01">
                 {mansion.astronomy}
               </Section>
-              <Section title="文化意义" en="CULTURE">
+              <Section title="文化意义" en="CULTURE" index="02">
                 {mansion.culture}
               </Section>
               {mansion.quote && (
-                <Section title="古籍" en="CLASSICS">
+                <Section title="古籍" en="CLASSICS" index="03">
                   <span className="font-serif-cn text-[13px] text-paper/85">{mansion.quote.text}</span>
                   <span className="mt-1 block text-[10.5px] text-mist/70">{mansion.quote.source}</span>
                 </Section>
@@ -179,7 +202,7 @@ export default function InfoPanel() {
           )}
 
           {quadrant && (
-            <div className="px-6 pb-6 pt-6">
+            <div className="px-6 pb-6 pt-3">
               <h2 className="font-serif-cn text-[26px] font-medium tracking-[0.2em] text-paper">
                 {quadrant.name}
               </h2>
@@ -212,7 +235,7 @@ export default function InfoPanel() {
           )}
 
           {showDipper && (
-            <div className="px-6 pb-6 pt-6">
+            <div className="px-6 pb-6 pt-3">
               <div className="flex items-baseline gap-3">
                 <h2 className="font-serif-cn text-[30px] font-medium tracking-[0.2em] text-paper">
                   北斗七星
@@ -251,14 +274,14 @@ export default function InfoPanel() {
               </div>
               <div className="h-px w-full bg-paper/10" />
 
-              <Section title="古代天文学" en="ASTRONOMY">
+              <Section title="古代天文学" en="ASTRONOMY" index="01">
                 {DIPPER_INFO.astronomy}
               </Section>
-              <Section title="传统文化 · 道教" en="CULTURE">
+              <Section title="传统文化 · 道教" en="CULTURE" index="02">
                 {DIPPER_INFO.culture}
               </Section>
               {DIPPER_INFO.quote && (
-                <Section title="古籍" en="CLASSICS">
+                <Section title="古籍" en="CLASSICS" index="03">
                   <span className="font-serif-cn text-[13px] text-paper/85">{DIPPER_INFO.quote.text}</span>
                   <span className="mt-1 block text-[10.5px] text-mist/70">
                     {DIPPER_INFO.quote.source}

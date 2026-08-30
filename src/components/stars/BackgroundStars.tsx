@@ -30,6 +30,8 @@ const LAYERS: LayerDef[] = [
   { radius: 2000, count: 5600, size: [0.9, 2.4], alpha: [0.16, 0.56], twinkle: 0.035, revealWindow: [0.26, 0.68], spin: 0.0007 },
   // 深空
   { radius: 3600, count: 5600, size: [0.7, 1.6], alpha: [0.1, 0.4], twinkle: 0.03, revealWindow: [0.2, 0.62], spin: -0.0005 },
+  // 极深空(天穹尺度延展)
+  { radius: 5200, count: 7000, size: [0.5, 1.2], alpha: [0.05, 0.22], twinkle: 0.025, revealWindow: [0.16, 0.58], spin: 0.0003 },
 ]
 
 /** 选中星宿/四象时,背景整体缓慢降低的幅度 */

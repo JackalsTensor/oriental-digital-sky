@@ -54,10 +54,10 @@ export default function OpeningOverlay() {
               initial={{ opacity: 0, y: 8, letterSpacing: '0.3em' }}
               animate={{ opacity: [0, 0.9, 0.9, 0], y: [8, 0, 0, -10], letterSpacing: ['0.3em', '0.55em', '0.55em', '0.6em'] }}
               transition={{
-                duration: 4.6,
+                duration: 3.8,
                 times: [0, 0.22, 0.6, 1],
                 ease: 'easeInOut',
-                delay: 1.4,
+                delay: 0.9,
               }}
             >
               仰观天文
@@ -69,10 +69,10 @@ export default function OpeningOverlay() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: [0, 0.8, 0.8, 0], y: [6, 0, 0, -8] }}
               transition={{
-                duration: 3.6,
+                duration: 3.0,
                 times: [0, 0.28, 0.62, 1],
                 ease: 'easeInOut',
-                delay: 4.4,
+                delay: 3.5,
               }}
             >
               THE TWENTY-EIGHT MANSIONS
@@ -83,7 +83,7 @@ export default function OpeningOverlay() {
               className="absolute flex flex-col items-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 6.6, duration: 1.1, ease: 'easeOut' }}
+              transition={{ delay: 5.0, duration: 1.1, ease: 'easeOut' }}
             >
               <motion.div
                 className="group flex items-center gap-4 border border-paper/25 px-10 py-4 transition-colors duration-500 hover:border-gold/60"

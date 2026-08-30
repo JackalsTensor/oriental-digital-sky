@@ -98,6 +98,8 @@ export const runtime = {
   dipperAnim: { active: false, t: 0 },
   /** 四象脊线绘制进度 */
   spineProgress: { 青龙: 0, 朱雀: 0, 白虎: 0, 玄武: 0 } as Record<QuadrantId, number>,
+  /** 四象脊线开场形成进度(天穹展开后保持常驻低亮度) */
+  spineFormed: { 青龙: 0, 朱雀: 0, 白虎: 0, 玄武: 0 } as Record<QuadrantId, number>,
   /** 悬停标签的屏幕坐标(px,由 Controls 写入,UI 直接读) */
   hoverScreen: null as null | { x: number; y: number },
   /** 可交互目标(由 MansionSystem 维护,Controls 用于投影拾取) */

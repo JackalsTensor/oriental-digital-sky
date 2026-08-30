@@ -10,6 +10,7 @@ import Controls from './Controls'
 import BackgroundStars from '@/components/stars/BackgroundStars'
 import MilkyWay from '@/components/stars/MilkyWay'
 import Nebulae from '@/components/stars/Nebulae'
+import CelestialRings from './CelestialRings'
 import MansionSystem from '@/components/mansions/MansionSystem'
 import { makeStarMaterial, makeStarGeometry } from '@/components/stars/starMaterial'
 import { runtime, smoothstep } from '@/store/sky'
@@ -73,6 +74,7 @@ export default function Sky() {
         <BackgroundStars />
         <MilkyWay />
         <Nebulae />
+        <CelestialRings />
         <MansionSystem />
       </Canvas>
     </div>

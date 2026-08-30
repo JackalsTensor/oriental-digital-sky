@@ -270,11 +270,25 @@ export default function MansionSystem() {
     const horizon = new THREE.BufferGeometry()
     horizon.setAttribute('position', new THREE.BufferAttribute(ringPos, 3))
 
+    // 地平环刻度(24,极淡的天文仪刻度)
+    const tickPos = new Float32Array(24 * 2 * 3)
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2
+      tickPos[i * 6] = Math.cos(a) * DOME_R
+      tickPos[i * 6 + 1] = 0
+      tickPos[i * 6 + 2] = Math.sin(a) * DOME_R
+      tickPos[i * 6 + 3] = Math.cos(a) * (DOME_R + 7)
+      tickPos[i * 6 + 4] = 0
+      tickPos[i * 6 + 5] = Math.sin(a) * (DOME_R + 7)
+    }
+    const horizonTicks = new THREE.BufferGeometry()
+    horizonTicks.setAttribute('position', new THREE.BufferAttribute(tickPos, 3))
+
     return {
       nodes, members, lines, lineMats, spines, spineMats, spineLines, flow,
       echoSpines, echoMats, echoLines,
       glow, glowRange,
-      dipper, dipperBowl, dipperHandle, dipperComp, polarisGuide, horizon,
+      dipper, dipperBowl, dipperHandle, dipperComp, polarisGuide, horizon, horizonTicks,
       nodeCount: n,
       nodeBaseSize: nodeSize,
       memberCount,
@@ -472,10 +486,15 @@ export default function MansionSystem() {
   useFrame((state, rawDt) => {
     const dt = Math.min(rawDt, 0.1)
     runtime.t += dt
-    runtime.reveal = Math.min(1, runtime.reveal + dt * (runtime.entered ? 1.5 : 0.115))
+    // 开场分阶段:进入前停在「星点」阶段,进入后天穹按 星群 → 连线 → 四象 → 天文仪 展开(约 2s)
+    const revealCap = runtime.entered ? 1 : 0.22
+    runtime.reveal = Math.min(revealCap, runtime.reveal + dt * (runtime.entered ? 0.4 : 0.115))
     const st = useSkyStore.getState()
     const reveal = runtime.reveal
-    const mansionReveal = smoothstep(0.52, 0.9, reveal)
+    const nodeReveal = smoothstep(0.34, 0.72, reveal)
+    const memberReveal = smoothstep(0.42, 0.8, reveal)
+    const lineReveal = smoothstep(0.58, 0.95, reveal)
+    const spineReveal = smoothstep(0.74, 1.0, reveal)
     // 快/慢两档过渡:悬停即时,选择/降权缓慢(约 2s 完全过渡)
     const lamFast = 1 - Math.exp(-dt * 4.2)
     const lamSlow = 1 - Math.exp(-dt * 1.7)
@@ -527,7 +546,7 @@ export default function MansionSystem() {
       else if (isSelQ) nodeT = 0.3 + 0.7 * qWindow(qi)
       else if (otherSel) nodeT = 0.13
       else nodeT = 0.62
-      nodeT *= isSel || isHov ? 1 : mansionReveal
+      nodeT *= isSel || isHov ? 1 : nodeReveal
       geo.nodeAlphaT[idx] = nodeT
       const prevA = geo.nodeAlpha[idx]
       geo.nodeAlpha[idx] += (nodeT - prevA) * lamM
@@ -553,7 +572,7 @@ export default function MansionSystem() {
       else if (isSelQ) lineT = 0.06 + 0.4 * qWindow(qi)
       else if (otherSel) lineT = 0.025
       else lineT = 0.14
-      lineT *= mansionReveal
+      lineT *= lineReveal
       geo.lineOpacityT[id] = lineT
       geo.lineOpacity[id] += (lineT - geo.lineOpacity[id]) * lamM
       geo.lineMats[id].opacity = geo.lineOpacity[id]
@@ -585,7 +604,7 @@ export default function MansionSystem() {
         else if (isSelQ) memT = 0.2 + 0.75 * qWindow(qi)
         else if (otherSel) memT = 0.07
         else memT = 0.5
-        memT *= mansionReveal
+        memT *= memberReveal
         geo.memberAlphaT[midx] = memT
         const prevM = geo.memberAlpha[midx]
         geo.memberAlpha[midx] += (memT - prevM) * lamM
@@ -620,14 +639,15 @@ export default function MansionSystem() {
     for (const q of QUADRANT_ORDER) {
       const qi = QUADRANT_ORDER.indexOf(q)
       const selQ = st.selectedQuadrant === q
-      const target = selQ ? 0.42 : 0.05
+      const target = selQ ? 0.48 : 0.05
       geo.spineOpacityT[qi] = target
       geo.spineOpacity[qi] += (target - geo.spineOpacity[qi]) * lamSlow
-      geo.spineMats[q].opacity = geo.spineOpacity[qi] * mansionReveal
-      geo.echoMats[q].opacity = geo.spineOpacity[qi] * mansionReveal * 0.45
-      // 绘制进度(约 3.6s 完整揭示)
+      geo.spineMats[q].opacity = geo.spineOpacity[qi] * spineReveal
+      geo.echoMats[q].opacity = geo.spineOpacity[qi] * spineReveal * 0.45
+      // 绘制进度:开场「四象形成」常驻;选中时(约 3.6s)再次逐宿揭示
+      runtime.spineFormed[q] = smoothstep(0.74, 1.0, reveal)
       const prog = runtime.spineProgress[q]
-      runtime.spineProgress[q] = selQ ? Math.min(1, prog + dt / 3.6) : 0
+      runtime.spineProgress[q] = selQ ? Math.min(1, prog + dt / 3.6) : runtime.spineFormed[q]
       const count = 96
       geo.spines[q].geo.setDrawRange(0, Math.max(1, Math.floor(runtime.spineProgress[q] * (count - 1)) + 1))
       // 流动粒子:细密、缓慢的粒子流
@@ -642,7 +662,7 @@ export default function MansionSystem() {
         const fa = geo.flow.getAttribute('position') as THREE.BufferAttribute
         fa.setXYZ(pi, p.x, p.y, p.z)
         const alpha = Math.sin(Math.PI * frac)
-        geo.flowAlpha[pi] = alpha * (selQ ? 0.26 : 0)
+        geo.flowAlpha[pi] = alpha * (selQ ? 0.3 : 0)
         ;(geo.flow.getAttribute('aAlpha') as THREE.BufferAttribute).setX(pi, geo.flowAlpha[pi])
       }
       ;(geo.flow.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true
@@ -651,7 +671,7 @@ export default function MansionSystem() {
 
     // 北斗
     const dipAlphaAttr = geo.dipper.getAttribute('aAlpha') as THREE.BufferAttribute
-    const dipperReveal = smoothstep(0.52, 0.9, reveal)
+    const dipperReveal = smoothstep(0.5, 0.9, reveal)
     let dipDirty = false
     for (let j = 0; j < geo.dipperCount; j++) {
       let t: number
@@ -680,7 +700,7 @@ export default function MansionSystem() {
     mats.dipperHandle.opacity = geo.dipperLineOpacity[1]
     mats.dipperComp.opacity = geo.dipperLineOpacity[2]
     mats.polarisLine.opacity = geo.dipperLineOpacity[3]
-    mats.horizon.opacity = 0.12 * smoothstep(0.5, 0.9, reveal)
+    mats.horizon.opacity = 0.12 * smoothstep(0.8, 1.0, reveal)
 
     // 全局 uniform
     const proj =
@@ -715,6 +735,7 @@ export default function MansionSystem() {
       <lineSegments geometry={geo.dipperComp} material={mats.dipperComp} frustumCulled={false} />
       <lineSegments geometry={geo.polarisGuide} material={mats.polarisLine} frustumCulled={false} />
       <lineLoop geometry={geo.horizon} material={mats.horizon} frustumCulled={false} />
+      <lineSegments geometry={geo.horizonTicks} material={mats.horizon} frustumCulled={false} />
 
       {cardinals.map((c) => (
         <sprite
