@@ -1,26 +1,387 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* 基础色:深黑蓝 */
+  --color-ink-950: #04060d;
+  --color-ink-900: #080d1a;
+  --color-ink-800: #0e1526;
+  --color-ink-700: #16203a;
+
+  /* 强调色:低饱和 */
+  --color-gold: #c2a05f;
+  --color-gold-dim: #8a7444;
+  --color-jade: #8fb8ae;
+  --color-verm: #c08a72;
+  --color-silver: #b7bcc6;
+  --color-mist: #7d8698;
+  --color-paper: #e9e7df;
+
+  /* 字体 */
+  --font-serif-cn:
+    'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  --font-sans-cn:
+    'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-latin: 'Space Grotesk', 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
+  background: var(--color-ink-950);
+  overscroll-behavior: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  color: var(--color-paper);
+  font-family: var(--font-sans-cn);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 信息面板内的文字允许选择 */
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* ── 玻璃面板 ── */
+.glass-panel {
+  background: rgba(9, 13, 25, 0.58);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(233, 231, 223, 0.09);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* 更通透的变体:信息面板/时间轴,让星空略微透过来 */
+.glass-panel-soft {
+  background: rgba(9, 13, 25, 0.38);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(233, 231, 223, 0.07);
+  box-shadow:
+    0 10px 34px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.hairline-b {
+  border-bottom: 1px solid rgba(233, 231, 223, 0.07);
+}
+
+/* ── 微标签 ── */
+.caps-label {
+  font-family: var(--font-latin);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-weight: 400;
+}
+
+/* ── 时间轴滑块 ── */
+input[type='range'].sky-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(
+    to right,
+    rgba(233, 231, 223, 0.1),
+    rgba(233, 231, 223, 0.32)
+  );
+  border-radius: 1px;
+  outline: none;
+  cursor: ew-resize;
+}
+input[type='range'].sky-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  border: 1px solid rgba(233, 231, 223, 0.45);
+  box-shadow: 0 0 8px rgba(194, 160, 95, 0.4);
+  cursor: ew-resize;
+  transition: box-shadow 0.4s ease;
+}
+input[type='range'].sky-slider:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 14px rgba(194, 160, 95, 0.6);
+}
+input[type='range'].sky-slider::-moz-range-thumb {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  border: 1px solid rgba(233, 231, 223, 0.45);
+  box-shadow: 0 0 8px rgba(194, 160, 95, 0.4);
+  cursor: ew-resize;
+}
+
+/* ── 数字/选择输入 ── */
+.sky-input {
+  background: rgba(14, 21, 38, 0.6);
+  border: 1px solid rgba(233, 231, 223, 0.12);
+  color: var(--color-paper);
+  font-family: var(--font-latin);
+  font-size: 12px;
+  border-radius: 2px;
+  padding: 4px 8px;
+  outline: none;
+  transition: border-color 0.25s ease;
+}
+.sky-input:focus {
+  border-color: rgba(194, 160, 95, 0.55);
+}
+.sky-input option {
+  background: #0e1526;
+}
+
+/* ── 细滚动条 ── */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(233, 231, 223, 0.18) transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(233, 231, 223, 0.18);
+  border-radius: 2px;
+}
+
+/* ── 暗角与颗粒(胶片质感) ── */
+.vignette {
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 42%, transparent 55%, rgba(2, 3, 8, 0.55) 100%);
+}
+.grain {
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── 文本渐变(极淡金) ── */
+.text-fade-gold {
+  background: linear-gradient(120deg, rgba(233, 231, 223, 0.92), rgba(194, 160, 95, 0.75));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── 首页门户(Portal)专用 ── */
+
+/* 深空墨蓝渐变:顶部近黑 → 中央极弱墨蓝空间感 → 底部压回近黑(无可见边界) */
+.portal-ink {
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 50% 40%,
+      rgba(16, 26, 50, 0.5) 0%,
+      rgba(7, 11, 22, 0.25) 48%,
+      rgba(2, 3, 8, 0) 72%
+    ),
+    linear-gradient(to bottom, #020308, #060b18 46%, #020308);
+}
+
+/* 中央光晕:极弱青蓝,轻微呼吸(14s 循环),让标题区域从黑暗中「浮起来」 */
+.portal-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 58% 42% at 50% 40%,
+    rgba(28, 48, 84, 0.5) 0%,
+    rgba(28, 48, 84, 0) 70%
+  );
+  animation: portal-breathe 14s ease-in-out infinite;
+}
+
+/* 问命 hover:中央光晕微偏紫(1200ms 过渡,非常轻微) */
+.portal-glow-destiny {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 58% 42% at 50% 40%,
+    rgba(52, 38, 86, 0.42) 0%,
+    rgba(52, 38, 86, 0) 70%
+  );
+  transition: opacity 1.2s ease;
+}
+.portal-glow-destiny.is-on {
+  opacity: 1;
+}
+
+@keyframes portal-breathe {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 入口卡片:默认极暗、弱边框;hover 微亮 + 对应色光晕 + 提示浮现(200~500ms) */
+.portal-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(9, 13, 25, 0.3);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(233, 231, 223, 0.07);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
+  transition:
+    border-color 400ms ease,
+    background-color 400ms ease,
+    box-shadow 400ms ease,
+    transform 400ms ease;
+}
+.portal-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background-color: rgba(10, 15, 28, 0.44);
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* 观星:当前主入口 —— 默认即略亮、暖金描边 */
+.portal-card-ready {
+  background: rgba(11, 16, 30, 0.46);
+  border-color: rgba(194, 160, 95, 0.24);
+}
+.portal-card-ready:hover {
+  border-color: rgba(194, 160, 95, 0.55);
+}
+
+/* 卡片内对应色光晕(顶部泛光,450ms 渐显) */
+.portal-card-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 450ms ease;
+  background: radial-gradient(
+    95% 75% at 50% 0%,
+    color-mix(in srgb, var(--accent) 13%, transparent) 0%,
+    transparent 65%
+  );
+}
+.portal-card:hover .portal-card-glow {
+  opacity: 1;
+}
+
+/* ENTER / PREVIEW 微小提示 */
+.portal-card-hint {
+  opacity: 0;
+  transform: translateY(3px);
+  transition:
+    opacity 350ms ease,
+    transform 350ms ease;
+}
+.portal-card:hover .portal-card-hint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── 问命选择页(Destiny)专用:体系母题 + 背景光晕 ── */
+
+/* 卡片母题:默认极淡, hover 提亮为对应体系色 */
+.destiny-motif {
+  color: rgba(233, 231, 223, 0.22);
+  transition: color 500ms ease;
+}
+.portal-card:hover .destiny-motif {
+  color: color-mix(in srgb, var(--accent) 80%, rgba(233, 231, 223, 0.6));
+}
+.destiny-motif .motif-line {
+  stroke: currentColor;
+  stroke-width: 1;
+  fill: none;
+}
+.destiny-motif .motif-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* 极慢旋转(90s / 反向 75s / 天球背环 150s)与四柱浮沉(12s) */
+.destiny-rotate {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: destiny-spin 90s linear infinite;
+}
+.destiny-rotate-rev {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: destiny-spin 75s linear infinite reverse;
+}
+.destiny-rotate-slower {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: destiny-spin 150s linear infinite;
+}
+.destiny-bob {
+  animation: destiny-bob 12s ease-in-out infinite;
+}
+@keyframes destiny-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes destiny-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 定位语(从时间/星曜/天体…):hover 时染上体系色 */
+.destiny-tagline {
+  transition: color 500ms ease;
+}
+.portal-card:hover .destiny-tagline {
+  color: color-mix(in srgb, var(--accent) 82%, #e9e7df 18%);
+}
+
+/* 各体系 hover 时的背景光晕偏色(1200ms,非常轻微) */
+.portal-glow-bazi,
+.portal-glow-ziwei,
+.portal-glow-qizheng {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.portal-glow-bazi {
+  background: radial-gradient(
+    ellipse 58% 42% at 50% 40%,
+    rgba(70, 58, 36, 0.4) 0%,
+    rgba(70, 58, 36, 0) 70%
+  );
+}
+.portal-glow-ziwei {
+  background: radial-gradient(
+    ellipse 58% 42% at 50% 40%,
+    rgba(54, 46, 80, 0.42) 0%,
+    rgba(54, 46, 80, 0) 70%
+  );
+}
+.portal-glow-qizheng {
+  background: radial-gradient(
+    ellipse 58% 42% at 50% 40%,
+    rgba(40, 54, 80, 0.42) 0%,
+    rgba(40, 54, 80, 0) 70%
+  );
+}
+.portal-glow-bazi.is-on,
+.portal-glow-ziwei.is-on,
+.portal-glow-qizheng.is-on {
+  opacity: 1;
 }

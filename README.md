@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 二十八宿 · The Twenty-Eight Mansions
 
-## Getting Started
+以现代 Web3D 技术重新呈现中国古代星空:二十八宿、四象、北斗,以及相关的古代天文学与道教文化。
 
-First, run the development server:
+Ancient Celestial Knowledge × Web3D × Digital Humanities × Interactive Visualization
+
+## 快速开始
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # 生产构建
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开页面后:黑暗中一个光点渐亮 → 星空浮现 → 摄像机后拉 → 点击 ENTER THE SKY 进入。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 操作
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 操作 | 方式 |
+| --- | --- |
+| 旋转观察 | 鼠标拖动(移动端单指) |
+| 远近 | 滚轮(移动端双指捏合) |
+| 航行 | W A S D / 方向键,Q E 升降 |
+| 返回/关闭 | ESC |
+| 悬停 | 星宿放大、光晕增强、名称标签 |
+| 点击星宿 | 摄像机缓移聚焦,右侧信息面板 |
+| 四象 | 左侧边缘滑出导航(七宿逐一点亮,脊线渐显,粒子沿线流动) |
+| 北斗 | 导航「北斗」→ 转向北方,七星依次亮起,拖动时间轴看斗柄旋转 |
+| 时间 | 底部时间轴(古代 −2500 → 现代 +2100);天球连续转动(周日运动 + 岁差) |
+| 地点 | 顶栏读数/时间轴按钮 → 9 个预设观测地 + 自定义经纬度 |
 
-## Learn More
+## 架构
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── data/                     # 二十八宿/四象/北斗/观测地数据 + 知识图谱数据层(Phase 4/5 预留)
+├── lib/
+│   ├── astronomy/            # 可替换的天文学计算层(纯函数,无 Three.js 依赖)
+│   └── utils/                # 程序化纹理、缓动
+├── store/                    # zustand 全局状态 + 3D 运行时(非响应式,避免高频重渲染)
+└── components/
+    ├── universe/             # Canvas 组合、相机/交互控制
+    ├── stars/                # 星点着色器、背景星层、银河、星云
+    ├── mansions/             # 二十八宿核心场景(节点/成员星/连线/四象脊线/北斗/地平环)
+    └── ui/                   # 开屏、顶栏、侧导航、信息面板、悬停标签、时间轴、提示
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 天文学计算层(诚实声明)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **做什么**:儒略日、恒星时(Meeus)、IAU 1976 岁差、赤道→地平变换、银道→赤道。星空旋转 = 周日运动 + 岁差,是真实的连续变化,不是装饰动画。
+- **不做什么**:不含章动、光行差、自行、大气折射、月相行星;输入时间按观测地地方时近似;1582 年之前用外推公历。**这不是 Stellarium 替代品**,而是「合理的天球运动」可视化。
+- **可替换**:`lib/astronomy` 是纯函数层,坐标管线(赤经赤纬 → 岁差 → 地平 → 场景向量)可整体替换为专业天文库,场景层不感知。
+- **校验**:`npm run check:astro`(北极星高度≈纬度、恒星中天高度/方位、GMST 锚点、岁差方向、儒略日锚点)。
+- **历史真实性**:不声称任何历史人物「亲眼看到」某片星空;面板中天文数据与文化观念分开表述,并标注说明。
 
-## Deploy on Vercel
+### 数据来源
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- 28 宿距星:传统距星表(对照《新唐书·历志》《开元占经》等),现代星名与 J2000 近似坐标。
+- 星官数:据《步天歌》(陈卓星官体系),与《开元占经》等互证(角 11、亢 7、氐 11、房 8、心 2、尾 6、箕 3、斗 10、牛 11、女 8、虚 10、危 11、室 11、壁 6、奎 9、娄 6、胃 7、昴 9、毕 15、觜 3、参 7、井 20、鬼 7、柳 2、星 6、张 2、翼 2、轸 8)。
+- 坐标为 J2000 近似值,仅用于天球可视化,非精密计算。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 性能
+
+- 全部星点走 GPU 点渲染(单着色器:亮核 + 宽光晕,加性混合),背景星/成员星/节点/银河共用材质;28 宿连线为线图元。
+- 3D 高频状态(悬停/选中/四象揭示/流动粒子/相机)在 `useFrame` 内插值,不触发 React 渲染;React 只负责 UI 与离散状态。
+- 拾取方式:36 个可交互目标(28 宿 + 北斗七星 + 北极星)的屏幕投影命中,无逐帧 raycast。
+- 在软件渲染(SwiftShader)下实测 48–75 FPS,独立 GPU 应稳定 60+。
+
+## 开发验证工具
+
+```bash
+npm run check:astro                    # 天文学计算层自检(8 项锚点)
+node scripts/screenshot.mjs            # 无头 Edge 驱动:开屏→进入→四象→悬停→点击→北斗→时间轴
+node scripts/analyze-shots.mjs         # 截图像素统计(亮度/色彩/区域)
+node scripts/ascii-view.mjs <file>     # 终端"看图"(ASCII 亮度图,支持曝光参数)
+node scripts/debug-sky.mjs             # 场景内省(相机姿态、目标投影、运行时状态)
+```
+
+浏览器驱动依赖系统 Edge(不下载浏览器)。
+
+## 阶段状态
+
+- ✅ **Phase 1 视觉原型**:开屏体验、银河、四层星空、星云、相机惯性、自动漂浮
+- ✅ **Phase 2 二十八宿**:28 宿节点/成员星/连线、四象逐宿揭示、悬停/点击/聚焦、信息面板(层级展开)、侧导航
+- ✅ **Phase 3 时间与地点**:时间轴(连续天球运动)、9 观测地 + 自定义经纬度、地平环、北斗模式(逐星点亮 + 斗柄随时旋转)
+- ⬜ **Phase 4 知识系统**:`data/entities.ts` 已定义知识图谱数据形状与示例(Star→Mansion→Quadrant→HistoricalText→TaoistCulture);待做:古籍关联 UI、古图模式(星空→线条化→古图视觉)、天文学/传统文化双观察层
+- ⬜ **Phase 5 AI**:「问天」接口预留架构:Question → Knowledge Retrieval(基于 entities 图谱与面板数据)→ LLM → Answer;不接入无依据的编造式问答
+
+## 已知简化
+
+- 无地平线遮挡(全天天球可见),地平环仅作方位参考。
+- 移动端:触摸拖动 + 点击 + 简化 UI;完整 PC 体验以桌面端优先。
+- 未使用后期处理(Bloom 等):柔光全部来自着色器光晕 + 加性混合,换取低端 GPU 的稳定帧率。
