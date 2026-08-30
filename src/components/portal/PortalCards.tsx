@@ -39,7 +39,7 @@ const MODULES: ModuleDef[] = [
     href: '/destiny',
     name: '命理',
     en: 'DESTINY',
-    status: '规划中',
+    status: '部分可用',
     desc: '紫微斗数 · 八字 · 七政四余',
     ready: false,
     ambience: 'destiny',
