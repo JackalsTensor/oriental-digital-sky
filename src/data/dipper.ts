@@ -20,8 +20,8 @@ export const DIPPER: DipperStar[] = [
   { id: 'yaoguang', name: '摇光', nameEn: 'Alkaid', part: '杓', ra: 13.7917, dec: 49.3133, mag: 1.86 },
 ]
 
-/** 辅星(开阳伴星,古人以能否分辨「辅」测试目力) */
-export const DIPPER_COMPANION: StarRef = { name: '辅', nameEn: 'Alcor', ra: 13.395, dec: 54.9883, mag: 4.0 }
+/** 辅星(开阳伴星 Alcor,古人以能否分辨「辅」测试目力)。J2000:13h25m13.5s / +54°59′17″ */
+export const DIPPER_COMPANION: StarRef = { name: '辅', nameEn: 'Alcor', ra: 13.4204, dec: 54.9881, mag: 4.0 }
 
 /** 北极星(勾陈一) */
 export const POLARIS: StarRef = { name: '北极星', nameEn: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 }

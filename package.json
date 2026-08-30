@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "check:astro": "tsx scripts/check-astronomy.ts",
-    "check:bazi": "tsx scripts/check-bazi.ts"
+    "check:bazi": "tsx scripts/check-bazi.ts",
+    "check:dipper": "tsx scripts/check-dipper.ts"
   },
   "dependencies": {
     "@fontsource/noto-sans-sc": "^5.3.0",
