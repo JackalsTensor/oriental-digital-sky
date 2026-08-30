@@ -36,7 +36,8 @@ export function validateInput(input: BaziInput): BaziError | null {
 
 /** 四柱排盘(输入须先通过 validateInput) */
 export function computeBaziChart(input: BaziInput): BaziChart {
-  // 晚子时换日:日柱与年/月边界均按换日后的日期判定
+  // 晚子时换日:日柱按换日后的日期判定(子初换日);
+  // 年/月边界按输入时刻与节气比较(未换日)——两者仅当节气恰落于 23:00–23:59 时才有差异
   const eff = effectiveDate(input.year, input.month, input.day, input.hour)
   const jd = jdOfCst(input.year, input.month, input.day, input.hour, input.minute)
 

@@ -7,10 +7,19 @@
  * 视觉沿用平台设计系统:玻璃面板、serif 中文、低饱和五行色、克制动画。
  */
 'use client'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
-import { computeBaziChart, MAX_YEAR, MIN_YEAR, validateInput, WUXING_ORDER, type BaziChart as BaziChartData, type Wuxing } from '@/lib/bazi'
+import {
+  computeBaziChart,
+  enrichChart,
+  MAX_YEAR,
+  MIN_YEAR,
+  validateInput,
+  WUXING_ORDER,
+  type BaziChart as BaziChartData,
+  type Wuxing,
+} from '@/lib/bazi'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
@@ -35,6 +44,8 @@ export default function BaziChart() {
   const [form, setForm] = useState<FormState>({ date: '', time: '', gender: 'male', place: '' })
   const [chart, setChart] = useState<BaziChartData | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const enriched = useMemo(() => (chart ? enrichChart(chart) : null), [chart])
 
   const dateParts = form.date ? form.date.split('-').map(Number) : null
   const timeParts = form.time ? form.time.split(':').map(Number) : null
@@ -184,7 +195,7 @@ export default function BaziChart() {
 
         {/* 排盘结果 */}
         <AnimatePresence>
-          {chart && (
+          {chart && enriched && (
             <motion.div
               key="chart"
               className="mt-10 w-full max-w-[620px]"
@@ -201,38 +212,72 @@ export default function BaziChart() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-4 gap-2">
-                  {chart.pillars.map((p, i) => (
+                  {enriched.pillars.map((p, i) => (
                     <motion.div
-                      key={p.name}
+                      key={p.pillar.name}
                       className="flex flex-col items-center gap-1.5 border border-paper/8 px-1 py-4"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.7, ease: EASE, delay: 0.25 + i * 0.12 }}
                     >
-                      <span className="caps-label text-[7.5px] text-mist/55">{p.name}</span>
+                      <span className="caps-label text-[7.5px] text-mist/55">{p.pillar.name}</span>
                       <span
                         className="font-serif-cn text-[34px] leading-none text-paper md:text-[38px]"
                         style={{ textShadow: '0 0 24px rgba(194,160,95,0.25)' }}
                       >
-                        {p.stem.char}
+                        {p.pillar.stem.char}
                       </span>
                       <span className="font-serif-cn text-[34px] leading-none text-paper/90 md:text-[38px]">
-                        {p.branch.char}
+                        {p.pillar.branch.char}
                       </span>
                       <span
                         className="text-[9.5px] tracking-[0.2em]"
-                        style={{ color: `${WUXING_COLOR[p.stem.wuxing]}b0` }}
+                        style={{ color: `${WUXING_COLOR[p.pillar.stem.wuxing]}b0` }}
                       >
-                        {p.stem.yinYang}
-                        {p.stem.wuxing} · {p.branch.yinYang}
-                        {p.branch.wuxing}
+                        {p.pillar.stem.yinYang}
+                        {p.pillar.stem.wuxing} · {p.pillar.branch.yinYang}
+                        {p.pillar.branch.wuxing}
+                      </span>
+                      <span className="mt-0.5 text-[9.5px] tracking-[0.15em] text-mist/75">
+                        {p.tenGod} · {p.hiddenStems[0].tenGod}
+                      </span>
+                      <span className="text-[9px] tracking-[0.1em] text-mist/50">
+                        {p.nayin.name} · {p.growthOfDayStem}
                       </span>
                     </motion.div>
                   ))}
                 </div>
 
+                {/* 地支藏干 */}
+                <div className="mt-5 border-t border-paper/8 pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-serif-cn text-[12px] tracking-[0.3em] text-paper/80">地支藏干</span>
+                    <span className="caps-label text-[7.5px] text-mist/55">Hidden Stems</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-4 gap-2">
+                    {enriched.pillars.map((p, i) => (
+                      <motion.div
+                        key={p.pillar.name}
+                        className="flex flex-col items-center gap-1 py-1.5"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 0.6 + i * 0.08 }}
+                      >
+                        {p.hiddenStems.map(({ hs, tenGod }, j) => (
+                          <span
+                            key={j}
+                            className={`text-[9.5px] tracking-[0.12em] ${j === 0 ? 'text-paper/70' : 'text-mist/55'}`}
+                          >
+                            {hs.stem.char} <span className="text-mist/45">·</span> {tenGod}
+                          </span>
+                        ))}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* 五行分布 */}
-                <div className="mt-6 border-t border-paper/8 pt-5">
+                <div className="mt-5 border-t border-paper/8 pt-5">
                   <div className="flex items-center justify-between">
                     <span className="font-serif-cn text-[12px] tracking-[0.3em] text-paper/80">五行分布</span>
                     <span className="caps-label text-[7.5px] text-mist/55">Five Elements</span>
@@ -274,7 +319,7 @@ export default function BaziChart() {
               {/* 排盘信息与免责声明 */}
               <p className="mt-4 text-center text-[9.5px] leading-relaxed tracking-[0.06em] text-mist/40">
                 排盘基于公历 {chart.effectiveDate.year}-{pad(chart.effectiveDate.month)}-
-                {pad(chart.effectiveDate.day)} 日柱(晚子时已换日)· 节气时刻精度约 ±15 分钟 · 本系统用于传统命理文化研究与数字化体验,排盘结果仅供文化研究与娱乐参考,不构成医疗、法律、投资或其他专业建议。
+                {pad(chart.effectiveDate.day)} 日柱(晚子时已换日)· 节气时刻精度约 ±15 分钟 · 藏干依通行表(巳藏丙庚戊)· 纳音依《三命通会》· 本系统用于传统命理文化研究与数字化体验,排盘结果仅供文化研究与娱乐参考,不构成医疗、法律、投资或其他专业建议。
               </p>
             </motion.div>
           )}

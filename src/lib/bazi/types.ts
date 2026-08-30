@@ -56,3 +56,45 @@ export interface BaziChart {
   /** 排盘时使用的日柱日期(晚子时已换日) */
   effectiveDate: { year: number; month: number; day: number }
 }
+
+// ─────────── V1.5 派生层(十神 / 藏干 / 纳音 / 十二长生) ───────────
+
+/** 十神(以日干为基准) */
+export type TenGod = '比肩' | '劫财' | '食神' | '伤官' | '偏财' | '正财' | '七杀' | '正官' | '偏印' | '正印'
+
+/** 纳音(干支对的纳音五行,每两干支同一纳音) */
+export interface Nayin {
+  name: string
+  element: Wuxing
+}
+
+/** 十二长生相位 */
+export type GrowthPhase =
+  | '长生' | '沐浴' | '冠带' | '临官' | '帝旺'
+  | '衰' | '病' | '死' | '墓' | '绝' | '胎' | '养'
+
+/** 地支藏干(顺序即本气/中气/余气,不含权重数值) */
+export interface HiddenStem {
+  stem: StemInfo
+  role: '本气' | '中气' | '余气'
+}
+
+/** 派生后的单柱 */
+export interface EnrichedPillar {
+  pillar: Pillar
+  /** 柱干对日干的十神 */
+  tenGod: TenGod
+  /** 地支藏干(各带其十神) */
+  hiddenStems: { hs: HiddenStem; tenGod: TenGod }[]
+  /** 本柱干支的纳音 */
+  nayin: Nayin
+  /** 日干在此柱地支的十二长生相位 */
+  growthOfDayStem: GrowthPhase
+}
+
+/** 派生后的完整命盘 */
+export interface EnrichedBaziChart extends Omit<BaziChart, 'pillars'> {
+  /** 日主(日柱天干) */
+  dayMaster: StemInfo
+  pillars: [EnrichedPillar, EnrichedPillar, EnrichedPillar, EnrichedPillar]
+}
