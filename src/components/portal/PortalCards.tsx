@@ -1,7 +1,7 @@
 /**
  * 总入口内容层:标题 + 2×2 模块卡片 + 分层宣言。
  * 卡片 hover 将氛围写入 portalRuntime(非响应式),由 PortalSkyScene 每帧缓动响应背景;
- * 中央光晕呼吸与「问命」光晕微变在本组件(DOM/CSS)完成。
+ * 中央光晕呼吸与「命理」光晕微变在本组件(DOM/CSS)完成。
  * 观星是当前主入口:默认即略亮、暖金描边;其余三个保持「世界正在形成」的微弱存在感。
  */
 'use client'
@@ -37,7 +37,7 @@ const MODULES: ModuleDef[] = [
   },
   {
     href: '/destiny',
-    name: '问命',
+    name: '命理',
     en: 'DESTINY',
     status: '规划中',
     desc: '紫微斗数 · 八字 · 七政四余',
@@ -81,7 +81,7 @@ export default function PortalCards() {
 
   return (
     <div className="absolute inset-0 z-20 overflow-y-auto thin-scrollbar">
-      {/* 中央光晕:轻微呼吸(14s);问命 hover 时微偏紫 */}
+      {/* 中央光晕:轻微呼吸(14s);命理 hover 时微偏紫 */}
       <div className="portal-glow" aria-hidden />
       <div className={`portal-glow-destiny ${amb === 'destiny' ? 'is-on' : ''}`} aria-hidden />
 
@@ -98,7 +98,7 @@ export default function PortalCards() {
             东方数字天穹
           </h1>
           <p className="mt-5 text-[11px] tracking-[0.34em] text-mist/75">
-            观星 · 问命 · 卜筮 · 知识
+            观星 · 命理 · 卜筮 · 知识
           </p>
         </motion.div>
 

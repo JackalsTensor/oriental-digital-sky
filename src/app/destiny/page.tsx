@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import DestinyCards from '@/components/destiny/DestinyCards'
 
 export const metadata: Metadata = {
-  title: '问命 · 东方数字天穹',
+  title: '命理 · 东方数字天穹',
   description:
     '探索东方传统命理体系:八字、紫微斗数、七政四余。以历史方法与文化文本的视角呈现。',
 }

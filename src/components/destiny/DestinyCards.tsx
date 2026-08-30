@@ -1,5 +1,5 @@
 /**
- * 问命体系选择页内容层:标题 + 三张体系卡片(八字 / 紫微斗数 / 七政四余)+ 天球背环。
+ * 命理体系选择页内容层:标题 + 三张体系卡片(八字 / 紫微斗数 / 七政四余)+ 天球背环。
  * 与首页同属一个视觉系统,但独立成章 —— 纯 CSS 深空底 + 极慢天球背环 + 每卡独有母题:
  *  - 八字:四柱竖柱(天干/地支两刻,极慢浮沉)—— 从时间中寻找命局
  *  - 紫微斗数:十二宫环(十二刻度 + 内环 + 紫微星,极慢旋转)—— 从星曜中观见命宫
@@ -155,7 +155,7 @@ export default function DestinyCards() {
     <div className="absolute inset-0 z-20 overflow-y-auto thin-scrollbar">
       <Backdrop />
       <div className="portal-glow" aria-hidden />
-      {/* 各体系 hover 时背景光晕轻微偏色(与首页问命变体同模式) */}
+      {/* 各体系 hover 时背景光晕轻微偏色(与首页命理变体同模式) */}
       <div className={`portal-glow-bazi ${hovered === '/destiny/bazi' ? 'is-on' : ''}`} aria-hidden />
       <div className={`portal-glow-ziwei ${hovered === '/destiny/ziwei' ? 'is-on' : ''}`} aria-hidden />
       <div className={`portal-glow-qizheng ${hovered === '/destiny/qizheng' ? 'is-on' : ''}`} aria-hidden />
@@ -177,7 +177,7 @@ export default function DestinyCards() {
         >
           <p className="caps-label text-[9px] text-mist/60">Celestial Realm · Destiny</p>
           <h1 className="mt-3 font-serif-cn text-[32px] font-medium tracking-[0.4em] text-paper md:text-[36px]">
-            问命
+            命理
           </h1>
           <p className="mt-4 text-[11px] tracking-[0.3em] text-mist/75">
             探索东方传统命理体系

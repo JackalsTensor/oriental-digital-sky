@@ -199,7 +199,7 @@ input[type='range'].sky-slider::-moz-range-thumb {
   animation: portal-breathe 14s ease-in-out infinite;
 }
 
-/* 问命 hover:中央光晕微偏紫(1200ms 过渡,非常轻微) */
+/* 命理 hover:中央光晕微偏紫(1200ms 过渡,非常轻微) */
 .portal-glow-destiny {
   position: absolute;
   inset: 0;
@@ -287,7 +287,7 @@ input[type='range'].sky-slider::-moz-range-thumb {
   transform: translateY(0);
 }
 
-/* ── 问命选择页(Destiny)专用:体系母题 + 背景光晕 ── */
+/* ── 命理选择页(Destiny)专用:体系母题 + 背景光晕 ── */
 
 /* 卡片母题:默认极淡, hover 提亮为对应体系色 */
 .destiny-motif {

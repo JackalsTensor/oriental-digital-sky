@@ -2,6 +2,7 @@
  * 顶栏:左侧品牌,右侧观测地点/时间读数(点击打开时间地点面板)。
  */
 'use client'
+import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSkyStore } from '@/store/sky'
 
@@ -26,6 +27,13 @@ export default function TopBar() {
           transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
         >
           <div className="flex flex-col">
+            {/* 返回天穹:低存在感,不打断观星沉浸 */}
+            <Link
+              href="/"
+              className="pointer-events-auto mb-2.5 self-start text-[10px] tracking-[0.3em] text-paper/35 transition-colors duration-300 hover:text-paper/85"
+            >
+              ← 返回天穹
+            </Link>
             <h1 className="font-serif-cn text-lg font-medium tracking-[0.35em] text-paper/90">
               二十八宿
             </h1>

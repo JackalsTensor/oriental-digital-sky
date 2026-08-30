@@ -53,7 +53,7 @@ src/
           ▼                ▼                    ▼                 ▼
    ┌─────────────┐  ┌─────────────┐      ┌─────────────┐   ┌─────────────┐
    │ /observe    │  │ /destiny    │      │ /divination │   │ /knowledge  │
-   │ 观星 ✅     │  │ 问命 规划中 │      │ 卜筮 规划中 │   │ 知识 规划中 │
+   │ 观星 ✅     │  │ 命理 规划中 │      │ 卜筮 规划中 │   │ 知识 规划中 │
    │ (现有系统)  │  │             │      │             │   │             │
    └──────┬──────┘  └──────┬──────┘      └──────┬──────┘   └──────┬──────┘
           │                │                    │                 │
@@ -77,7 +77,7 @@ src/
 ```
 /               总入口 —— 四模块集散,不做具体功能
 ├── /observe    观星 ✅(现有二十八宿 Web3D 全量内容)
-├── /destiny    问命 —— 命理体系选择页(八字 / 紫微斗数 / 七政四余 入口)
+├── /destiny    命理 —— 命理体系选择页(八字 / 紫微斗数 / 七政四余 入口)
 │   ├── /destiny/bazi      八字 —— 占位(四柱命局)
 │   ├── /destiny/ziwei     紫微斗数 —— 占位(十二宫星曜)
 │   └── /destiny/qizheng   七政四余 —— 占位(日月五星)
@@ -181,7 +181,7 @@ src/core/celestial.ts    未来:统一星体目录接口(名称 → J2000 坐标
 ## 8. 一级模块职责
 
 - **/observe 观星**:现有二十八宿 Web3D(不动)。未来扩展:七政四余、古代星官、古星图模式(Phase 4 已预留)、古代天文学层。依赖 core/astronomy + core/celestial。
-- **/destiny 问命**:紫微斗数、八字、七政四余。传统命理体系,以历史方法与文化文本定位。依赖 core/calendar + core/location + data/practice。
+- **/destiny 命理**:紫微斗数、八字、七政四余。传统命理体系,以历史方法与文化文本定位。依赖 core/calendar + core/location + data/practice。
 - **/divination 卜筮**:六爻、奇门遁甲、梅花易数、大六壬、太乙。传统占法体系,定位同上。依赖 core/calendar + data/practice。
 - **/knowledge 知识**:古籍、星官、二十八宿、古代天文学、历史文化资料。文本优先,零 3D 风险最低,是验证 Core 分层的第一个候选模块。依赖 core/knowledge + data/culture。
 
@@ -215,7 +215,7 @@ store(site, time) ──revision++──▶ 订阅者(MilkyWay / Nebulae / Mansi
 
 ```
 / ──点击 观星──▶ /observe ──开屏──▶ ENTER THE SKY ──▶ 交互
-/ ──点击 问命/卜筮/知识──▶ 占位页 ──返回──▶ /
+/ ──点击 命理/卜筮/知识──▶ 占位页 ──返回──▶ /
 (浏览器返回键在 /observe 内同样可用;未来在 TopBar 加「门户」回链,本次不动现有 UI)
 ```
 
