@@ -74,9 +74,9 @@ export interface FocusState {
 }
 
 export interface HitTarget {
-  /** mansion id,或 'dipper:星名',或 'polaris' */
+  /** mansion id,或 'dipper:星名' */
   id: string
-  kind: 'mansion' | 'dipper' | 'polaris'
+  kind: 'mansion' | 'dipper'
   pos: THREE.Vector3
   label: string
   sub: string
@@ -119,7 +119,7 @@ export const smoothstep = (e0: number, e1: number, x: number) => {
   return t * t * (3 - 2 * t)
 }
 
-/** 相机聚焦到某个可交互目标(星宿 / 北斗星 / 北极星) */
+/** 相机聚焦到某个可交互目标(星宿 / 北斗星) */
 export function focusTarget(id: string) {
   const hit = runtime.hit.find((h) => h.id === id)
   if (!hit) return

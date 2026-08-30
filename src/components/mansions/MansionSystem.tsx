@@ -2,7 +2,7 @@
  * 二十八宿核心场景:
  *  - 28 宿节点(距星,可交互)+ 成员星 + 宿内连线
  *  - 四象脊线(七宿距星连线)与沿线流动粒子
- *  - 北斗七星 + 辅星 + 北极星
+ *  - 北斗七星 + 辅星(北极星不再渲染,数据保留)
  *  - 地平环与方位标记
  *
  * 所有天体位置由天文学管线计算,随时间/地点变更整体重建。
@@ -19,7 +19,7 @@ import {
   type MansionId,
 } from '@/data/mansions'
 import { QUADRANTS, QUADRANT_ORDER, type QuadrantId } from '@/data/quadrants'
-import { DIPPER, DIPPER_COMPANION, POLARIS } from '@/data/dipper'
+import { DIPPER, DIPPER_COMPANION } from '@/data/dipper'
 import { computeSkyFrame } from '@/lib/astronomy'
 import { makeStarMaterial, makeStarGeometry } from '@/components/stars/starMaterial'
 import { makeTextSprite } from '@/lib/utils/textures'
@@ -42,7 +42,7 @@ const LINE_BASE = new THREE.Color('#8fa3bd')
 /** 所有可交互目标(供 Controls 投影拾取) */
 interface Hit {
   id: string
-  kind: 'mansion' | 'dipper' | 'polaris'
+  kind: 'mansion' | 'dipper'
   pos: THREE.Vector3
   label: string
   sub: string
@@ -69,7 +69,6 @@ function makeHitList(): Hit[] {
       sub: '北斗七星',
     })
   }
-  list.push({ id: 'polaris', kind: 'polaris', pos: new THREE.Vector3(), label: '北极星', sub: '勾陈一' })
   return list
 }
 
@@ -81,7 +80,7 @@ export default function MansionSystem() {
   const geo = useMemo(() => {
     const n = MANSION_ORDER.length
     const memberCount = MANSION_ORDER.reduce((acc, id) => acc + MANSIONS[id].members.length, 0)
-    const dipperCount = DIPPER.length + 2 // 辅星 + 北极星
+    const dipperCount = DIPPER.length + 1 // 辅星
 
     const nodePos = new Float32Array(n * 3)
     const nodeSize = new Float32Array(n)
@@ -214,13 +213,13 @@ export default function MansionSystem() {
       seed: 5,
     })
 
-    // 北斗 + 辅星 + 北极星
+    // 北斗 + 辅星
     const dipperPos = new Float32Array(dipperCount * 3)
     const dipperSize = new Float32Array(dipperCount)
     const dipperColor = new Float32Array(dipperCount * 3)
-    const all = [...DIPPER, DIPPER_COMPANION, POLARIS]
+    const all = [...DIPPER, DIPPER_COMPANION]
     all.forEach((st, i) => {
-      dipperSize[i] = i < 7 ? 20 + (2.5 - st.mag) * 6 : i === 7 ? 4 : 24
+      dipperSize[i] = i < 7 ? 20 + (2.5 - st.mag) * 6 : 4
       dipperColor[i * 3] = i < 7 ? 1.0 : 0.82
       dipperColor[i * 3 + 1] = i < 7 ? 0.96 : 0.86
       dipperColor[i * 3 + 2] = i < 7 ? 0.9 : 1.0
@@ -234,14 +233,14 @@ export default function MansionSystem() {
       seed: 17,
     })
 
-    // 斗魁四星闭合成斗身:天枢0 天璇1 天玑2 天权3;斗柄:3-4-5-6(玉衡4 开阳5 摇光6);辅7;北极星8
+    // 斗身为开放星链(不闭合):天枢0-天璇1-天玑2-天权3;斗柄:3-4-5-6(玉衡4 开阳5 摇光6);辅7
     const dipperBowl = new THREE.BufferGeometry()
     dipperBowl.setAttribute(
       'position',
-      new THREE.BufferAttribute(new Float32Array(3 * 4 * 2), 3),
+      new THREE.BufferAttribute(new Float32Array(3 * 3 * 2), 3),
     )
-    dipperBowl.setDrawRange(0, 8)
-    dipperBowl.userData.pairs = [[0, 1], [1, 2], [2, 3], [3, 0]]
+    dipperBowl.setDrawRange(0, 6)
+    dipperBowl.userData.pairs = [[0, 1], [1, 2], [2, 3]]
     const dipperHandle = new THREE.BufferGeometry()
     dipperHandle.setAttribute(
       'position',
@@ -253,10 +252,6 @@ export default function MansionSystem() {
     dipperComp.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3))
     dipperComp.setDrawRange(0, 2)
     dipperComp.userData.pairs = [[5, 7]]
-    const polarisGuide = new THREE.BufferGeometry()
-    polarisGuide.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3))
-    polarisGuide.setDrawRange(0, 2)
-    polarisGuide.userData.pairs = [[0, 8]]
 
     // 地平环
     const RING = 128
@@ -288,7 +283,7 @@ export default function MansionSystem() {
       nodes, members, lines, lineMats, spines, spineMats, spineLines, flow,
       echoSpines, echoMats, echoLines,
       glow, glowRange,
-      dipper, dipperBowl, dipperHandle, dipperComp, polarisGuide, horizon, horizonTicks,
+      dipper, dipperBowl, dipperHandle, dipperComp, horizon, horizonTicks,
       nodeCount: n,
       nodeBaseSize: nodeSize,
       memberCount,
@@ -303,8 +298,8 @@ export default function MansionSystem() {
       lineOpacityT: Object.fromEntries(MANSION_ORDER.map((id) => [id, 0])) as Record<MansionId, number>,
       spineOpacity: QUADRANT_ORDER.map(() => 0.06),
       spineOpacityT: QUADRANT_ORDER.map(() => 0.06),
-      dipperLineOpacity: [0, 0, 0, 0],
-      dipperLineOpacityT: [0, 0, 0, 0],
+      dipperLineOpacity: [0, 0, 0],
+      dipperLineOpacityT: [0, 0, 0],
       glowAlpha: new Float32Array(glowCount),
       flowAlpha: new Float32Array(4 * FLOW_PER_Q),
       flowPerQ: FLOW_PER_Q,
@@ -331,7 +326,6 @@ export default function MansionSystem() {
         dipperBowl: lineMat(),
         dipperHandle: lineMat(),
         dipperComp: lineMat(),
-        polarisLine: lineMat(),
         horizon: new THREE.LineBasicMaterial({
           color: new THREE.Color('#5f7391'),
           transparent: true,
@@ -429,9 +423,9 @@ export default function MansionSystem() {
       }
       glowAttr.needsUpdate = true
 
-      // 北斗 + 辅 + 北极星
+      // 北斗 + 辅
       const dipAttr = geo.dipper.getAttribute('position') as THREE.BufferAttribute
-      const all = [...DIPPER, DIPPER_COMPANION, POLARIS]
+      const all = [...DIPPER, DIPPER_COMPANION]
       const dipPts = all.map((st) => {
         const v = f.radecToWorld(st.ra, st.dec)
         return new THREE.Vector3(v[0] * DIPPER_R, v[1] * DIPPER_R, v[2] * DIPPER_R)
@@ -449,7 +443,6 @@ export default function MansionSystem() {
       setLine(geo.dipperBowl)
       setLine(geo.dipperHandle)
       setLine(geo.dipperComp)
-      setLine(geo.polarisGuide)
 
       // 可交互目标
       for (const h of geo.hit) {
@@ -459,9 +452,6 @@ export default function MansionSystem() {
           const name = h.id.replace('dipper:', '')
           const st = DIPPER.find((d) => d.name === name)!
           const v = f.radecToWorld(st.ra, st.dec)
-          h.pos.set(v[0] * DIPPER_R, v[1] * DIPPER_R, v[2] * DIPPER_R)
-        } else {
-          const v = f.radecToWorld(POLARIS.ra, POLARIS.dec)
           h.pos.set(v[0] * DIPPER_R, v[1] * DIPPER_R, v[2] * DIPPER_R)
         }
       }
@@ -687,19 +677,17 @@ export default function MansionSystem() {
     }
     if (dipDirty) dipAlphaAttr.needsUpdate = true
 
-    // 北斗连线:斗身 → 斗柄 → 辅 → 天枢-北极星
+    // 北斗连线:斗身(开放星链)→ 斗柄 → 辅
     const bowlT = dAnim.active ? smoothstep(0.1, 0.6, dAnim.t) * 0.6 : 0.14
     const handleT = dAnim.active ? smoothstep(0.5, 1.0, dAnim.t) * 0.6 : 0.12
     const compT = dAnim.active ? smoothstep(0.8, 1.3, dAnim.t) * 0.5 : 0.1
-    const guideT = dAnim.active ? smoothstep(1.0, 1.5, dAnim.t) * 0.4 : 0.09
-    const dl = [bowlT, handleT, compT, guideT].map((t) => t * dipperReveal)
+    const dl = [bowlT, handleT, compT].map((t) => t * dipperReveal)
     dl.forEach((t, i) => {
       geo.dipperLineOpacity[i] += (t - geo.dipperLineOpacity[i]) * lam
     })
     mats.dipperBowl.opacity = geo.dipperLineOpacity[0]
     mats.dipperHandle.opacity = geo.dipperLineOpacity[1]
     mats.dipperComp.opacity = geo.dipperLineOpacity[2]
-    mats.polarisLine.opacity = geo.dipperLineOpacity[3]
     mats.horizon.opacity = 0.12 * smoothstep(0.8, 1.0, reveal)
 
     // 全局 uniform
@@ -733,7 +721,6 @@ export default function MansionSystem() {
       <lineSegments geometry={geo.dipperBowl} material={mats.dipperBowl} frustumCulled={false} />
       <lineSegments geometry={geo.dipperHandle} material={mats.dipperHandle} frustumCulled={false} />
       <lineSegments geometry={geo.dipperComp} material={mats.dipperComp} frustumCulled={false} />
-      <lineSegments geometry={geo.polarisGuide} material={mats.polarisLine} frustumCulled={false} />
       <lineLoop geometry={geo.horizon} material={mats.horizon} frustumCulled={false} />
       <lineSegments geometry={geo.horizonTicks} material={mats.horizon} frustumCulled={false} />
 

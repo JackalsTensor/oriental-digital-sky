@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { focusTarget, useSkyStore } from '@/store/sky'
 import { MANSIONS, QUADRANT_MANSIONS } from '@/data/mansions'
 import { QUADRANTS } from '@/data/quadrants'
-import { DIPPER, DIPPER_COMPANION, DIPPER_INFO, POLARIS } from '@/data/dipper'
+import { DIPPER, DIPPER_COMPANION, DIPPER_INFO } from '@/data/dipper'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const CN_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九']
@@ -267,9 +267,6 @@ export default function InfoPanel() {
                   <span>
                     辅星({DIPPER_COMPANION.nameEn}) · 开阳伴星,古人以能否分辨测试目力
                   </span>
-                </div>
-                <div className="mt-2 text-[10.5px] text-mist/70">
-                  北极星({POLARIS.nameEn}) · 天枢、天璇连线延长约五倍所指
                 </div>
               </div>
               <div className="h-px w-full bg-paper/10" />
