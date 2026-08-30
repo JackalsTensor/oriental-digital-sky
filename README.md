@@ -70,6 +70,7 @@ src/
 
 ```bash
 npm run check:astro                    # 天文学计算层自检(8 项锚点)
+npm run check:bazi                     # 八字排盘自检(干支日/节气时刻/换年换月/时柱/五行锚点)
 node scripts/screenshot.mjs            # 无头 Edge 驱动:开屏→进入→四象→悬停→点击→北斗→时间轴
 node scripts/analyze-shots.mjs         # 截图像素统计(亮度/色彩/区域)
 node scripts/ascii-view.mjs <file>     # 终端"看图"(ASCII 亮度图,支持曝光参数)

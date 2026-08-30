@@ -1,0 +1,58 @@
+/**
+ * 八字排盘类型。
+ * 历法约定(见 README 与页面说明):
+ *  - 输入为公历,北京时间(UTC+8);
+ *  - 年柱以立春换年,月柱以十二「节」定月;
+ *  - 日柱用儒略日序数干支(已验证锚点:1900-01-01 甲戌、1949-10-01 甲子、2000-01-01 戊午);
+ *  - 23:00–23:59 按「子初换日」计入次日(传统排盘规则);
+ *  - 地点为文本记录,未做真太阳时/地方时换算(后续阶段)。
+ */
+
+export type Wuxing = '木' | '火' | '土' | '金' | '水'
+
+export type YinYang = '阳' | '阴'
+
+/** 天干(甲…癸) */
+export interface StemInfo {
+  char: string
+  index: number
+  wuxing: Wuxing
+  yinYang: YinYang
+}
+
+/** 地支(子…亥) */
+export interface BranchInfo {
+  char: string
+  index: number
+  wuxing: Wuxing
+  yinYang: YinYang
+}
+
+/** 一柱(干支) */
+export interface Pillar {
+  /** 柱名:年柱/月柱/日柱/时柱 */
+  name: '年柱' | '月柱' | '日柱' | '时柱'
+  stem: StemInfo
+  branch: BranchInfo
+}
+
+/** 出生信息输入(公历,北京时间) */
+export interface BaziInput {
+  year: number
+  month: number
+  day: number
+  hour: number
+  minute: number
+  gender: 'male' | 'female'
+  place: string
+}
+
+/** 排盘结果 */
+export interface BaziChart {
+  /** 四柱:年/月/日/时 */
+  pillars: [Pillar, Pillar, Pillar, Pillar]
+  /** 五行统计(八字共 8 字) */
+  wuxing: Record<Wuxing, number>
+  /** 排盘时使用的日柱日期(晚子时已换日) */
+  effectiveDate: { year: number; month: number; day: number }
+}

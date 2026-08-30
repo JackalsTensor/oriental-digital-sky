@@ -93,6 +93,7 @@ export function computeSkyFrame(site: Site, time: TimeParts): SkyFrame {
 }
 
 export * from './types'
+export { solarApparentLongitude, solarApparentLongitudeRaw } from './solar'
 export { toJulianDate, lstHours, gmstDegrees, utHoursFromLocal, J2000 } from './time'
 export { precessionMatrix } from './precession'
 export {

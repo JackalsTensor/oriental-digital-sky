@@ -1,20 +1,18 @@
 import type { Metadata } from 'next'
-import ModulePlaceholder from '@/components/portal/ModulePlaceholder'
+import BaziChart from '@/components/destiny/BaziChart'
 
 export const metadata: Metadata = {
   title: '八字 · 命理 · 东方数字天穹',
-  description: '以出生时间建立四柱命局:天干地支、四柱五行、大运流年。排盘功能构建中。',
+  description:
+    '八字排盘:以公历出生时间建立四柱命局(年柱立春换年、月柱节气定月、日柱干支、时柱时辰),呈现天干地支与五行分布。以历史方法与文化文本定位。',
 }
 
 export default function BaziPage() {
   return (
-    <ModulePlaceholder
-      name="八字"
-      en="BAZI · FOUR PILLARS"
-      desc="以出生时间建立四柱命局。将以历史方法与文化文本的视角呈现其源流、方法与文献,排盘功能正在构建。"
-      items={['天干地支', '四柱五行', '大运流年']}
-      backHref="/destiny"
-      backLabel="返回命理"
-    />
+    <main className="portal-ink fixed inset-0 overflow-hidden text-paper">
+      <div className="vignette absolute inset-0 z-10" />
+      <div className="grain absolute inset-0 z-10" />
+      <BaziChart />
+    </main>
   )
 }
